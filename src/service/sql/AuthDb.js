@@ -5,8 +5,8 @@ const sqlCon = require("../../../src/app").sqlConnection
 async function createUserWithGoogleAuth(googleUser) {
     const values = [googleUser.userId, googleUser.email];
     const createUserQuery = `
-    INSERT INTO auth (authMedium, authMediumId, authMediumUserName)
-    VALUES ("google", ?, ?) ;
+    INSERT INTO auth (authMedium, role, authMediumId, authMediumUserName)
+    VALUES ("google","USER", ?, ?) ;
 `;
     return new Promise((resolve, reject) => {
         sqlCon.query(createUserQuery, values, (error, res) => {
@@ -24,6 +24,49 @@ async function createUserWithGoogleAuth(googleUser) {
         });
     });
 }
+
+async function createOwnerWithGoogleAuth(googleUser) {
+    const values = [googleUser.userId, googleUser.email];
+    const checkOwnerQuery = `
+        SELECT COUNT(*) AS ownerCount 
+        FROM auth 
+        WHERE role = "OWNER" FOR UPDATE;
+    `;
+    const createOwnerQuery = `
+        INSERT INTO auth (authMedium, role, authMediumId, authMediumUserName)
+        VALUES ("google", "OWNER", ?, ?);
+    `;
+
+    return new Promise((resolve, reject) => {
+        sqlCon.beginTransaction(err => {
+            if (err) return reject({ message: err.message });
+
+            sqlCon.query(checkOwnerQuery, (error, results) => {
+                if (error) {
+                    return sqlCon.rollback(() => reject({ message: error.message }));
+                }
+
+                if (results[0].ownerCount > 0) {
+                    return sqlCon.rollback(() => reject({ message: "An owner already exists" }));
+                }
+
+                sqlCon.query(createOwnerQuery, values, (insertError, res) => {
+                    if (insertError) {
+                        return sqlCon.rollback(() => reject({ message: insertError.message }));
+                    }
+
+                    sqlCon.commit(commitErr => {
+                        if (commitErr) {
+                            return sqlCon.rollback(() => reject({ message: commitErr.message }));
+                        }
+                        resolve(res.insertId);
+                    });
+                });
+            });
+        });
+    });
+}
+
 
 async function getGoogleUser(googleUser){
     const values = [googleUser.userId]
@@ -177,6 +220,7 @@ async function getAllSessions(userId){
 }
 
 module.exports.createUserWithGoogleAuth = {createUserWithGoogleAuth}
+module.exports.createOwnerWithGoogleAuth = {createOwnerWithGoogleAuth}
 module.exports.getGoogleUser = {getGoogleUser}
 module.exports.addRefreshToken = {addRefreshToken}
 module.exports.refreshTokenExist = {refreshTokenExist}

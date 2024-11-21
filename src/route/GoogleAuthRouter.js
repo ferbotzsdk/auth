@@ -7,6 +7,7 @@ const googleSignUpBodyModel = require("../model/google/SignUpBody").googleSignUp
 const googleUserDataModel = require("../model/google/UserData").googleUserData
 const { getGoogleUser } = require("../service/sql/AuthDb").getGoogleUser
 const { createUserWithGoogleAuth } = require("../service/sql/AuthDb").createUserWithGoogleAuth
+const { createOwnerWithGoogleAuth } = require("../service/sql/AuthDb").createOwnerWithGoogleAuth
 const { addSession } = require("../service/sql/AuthDb").addSession
 const { createRefreshAndBearer } = require("../domain/RefreshBearer").createRefreshAndBearer
 
@@ -38,6 +39,36 @@ router.post("/signup", async (req, res) => {
         res.status(400).json({message: "error " + error.message});
     }
 })
+
+router.post("/signup/owner", async (req, res) => {
+    const {error , value : { idToken , deviceName , deviceModel }} = googleSignUpBodyModel.validate(req.body);
+    if (!error) {
+        const {user, error} = await verifyGoogle(idToken)
+        if (user) {
+            try {
+                const userId = await createOwnerWithGoogleAuth(user)
+                const sessionId = await addSession(deviceName,deviceModel)
+                const tokens = await createRefreshAndBearer(userId,null,sessionId)
+                if(tokens){
+                    res.status(200).json({
+                        refreshToken : tokens.refreshToken,
+                        bearerToken : tokens.bearerToken,
+                        sessionId : sessionId
+                    })
+                }else {
+                    res.status(500).json({message : "Server error, failed to create tokens"})
+                }
+            }catch(error) {
+                res.status(403).json(error)
+            }
+        }else {
+            res.status(403).json(error)
+        }
+    }else {
+        res.status(400).json({message: "error " + error.message});
+    }
+})
+
 
 router.post("/signin", async (req, res) => {
     const { error , value : { idToken , deviceName , deviceModel } } = googleSignUpBodyModel.validate(req.body);
