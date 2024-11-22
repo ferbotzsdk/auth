@@ -85,6 +85,7 @@ function initDbAndTables() {
 initDbAndTables();
 
 module.exports.sqlConnection = dbCon;
-app.use("/google" , require("./route/GoogleAuthRouter").googleAuthRouter)
-app.use("/token" , require("./route/TokenRouter").tokenRouter)
-app.use("/session" , require("./route/SessionRouter").sessionRouter)
+app.use("/auth/google" , require("./route/GoogleAuthRouter").googleAuthRouter)
+app.use("/auth/token" , require("./route/TokenRouter").tokenRouter)
+app.use("/auth/session" , require("./route/SessionRouter").sessionRouter)
+app.use("/auth/role" , require("./route/RoleRouter").roleRouter)

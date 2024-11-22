@@ -219,6 +219,39 @@ async function getAllSessions(userId){
     })
 }
 
+async function userRole(authMediumUserName) {
+    const selectQuery = "SELECT userId, role FROM auth WHERE authMediumUserName = ?;";
+    return new Promise((resolve, reject) => {
+        sqlCon.query(selectQuery, [authMediumUserName], (error, res) => {
+            if (error) {
+                reject({ message: error.message });
+            } else {
+                if (res.length > 0) {
+                    resolve({
+                        userId: res[0].userId,
+                        oldRole: res[0].role
+                    });
+                } else {
+                    reject({ message: "User not found" });
+                }
+            }
+        });
+    });
+}
+
+async function assignRole(newRole,userId) {
+    const updateQuery = "UPDATE auth SET role = ? WHERE userId = ?";
+    return new Promise((resolve, reject) => {
+        sqlCon.query(updateQuery, [newRole, userId], (error, res) => {
+            if (error) {
+                reject({ message: "Failed to assign Role" });
+            }
+            resolve(newRole);
+        });
+    });
+}
+
+
 module.exports.createUserWithGoogleAuth = {createUserWithGoogleAuth}
 module.exports.createOwnerWithGoogleAuth = {createOwnerWithGoogleAuth}
 module.exports.getGoogleUser = {getGoogleUser}
@@ -230,3 +263,5 @@ module.exports.deleteOldTokens = {deleteOldTokens}
 module.exports.addSession = {addSession}
 module.exports.getAllSessions = {getAllSessions}
 module.exports.sessionExist = {sessionExist}
+module.exports.userRole = {userRole}
+module.exports.assignRole = {assignRole}
