@@ -3,10 +3,11 @@ const sqlCon = require("../../../src/app").sqlConnection
 //google  user
 
 async function createUserWithGoogleAuth(googleUser) {
-    const values = [googleUser.userId, googleUser.email];
+    const role = "USER"
+    const values = [role, googleUser.userId, googleUser.email];
     const createUserQuery = `
     INSERT INTO auth (authMedium, role, authMediumId, authMediumUserName)
-    VALUES ("google","USER", ?, ?) ;
+    VALUES ("google", ?, ?, ?) ;
 `;
     return new Promise((resolve, reject) => {
         sqlCon.query(createUserQuery, values, (error, res) => {
@@ -19,14 +20,15 @@ async function createUserWithGoogleAuth(googleUser) {
                     reject({message : error.message})
                 }
             } else {
-                resolve(res.insertId);
+                resolve({userId: res.insertId , role : role});
             }
         });
     });
 }
 
 async function createOwnerWithGoogleAuth(googleUser) {
-    const values = [googleUser.userId, googleUser.email];
+    const role = "OWNER"
+    const values = [role, googleUser.userId, googleUser.email];
     const checkOwnerQuery = `
         SELECT COUNT(*) AS ownerCount 
         FROM auth 
@@ -34,7 +36,7 @@ async function createOwnerWithGoogleAuth(googleUser) {
     `;
     const createOwnerQuery = `
         INSERT INTO auth (authMedium, role, authMediumId, authMediumUserName)
-        VALUES ("google", "OWNER", ?, ?);
+        VALUES ("google", ?, ?, ?);
     `;
 
     return new Promise((resolve, reject) => {
@@ -59,7 +61,7 @@ async function createOwnerWithGoogleAuth(googleUser) {
                         if (commitErr) {
                             return sqlCon.rollback(() => reject({ message: commitErr.message }));
                         }
-                        resolve(res.insertId);
+                        resolve({userId: res.insertId , role : role});
                     });
                 });
             });
@@ -70,7 +72,7 @@ async function createOwnerWithGoogleAuth(googleUser) {
 
 async function getGoogleUser(googleUser){
     const values = [googleUser.userId]
-    const getUserQuery = "SELECT userId FROM auth WHERE authMediumId=?;"
+    const getUserQuery = "SELECT userId, role FROM auth WHERE authMediumId=?;"
     return new Promise((resolve, reject) => {
         sqlCon.query(getUserQuery, values, (error, res) => {
             if (error) {
@@ -79,7 +81,10 @@ async function getGoogleUser(googleUser){
                 if (res.length === 0){
                     reject({message : "User doesn't exist"});
                 }else{
-                    resolve(res[0].userId)
+                    resolve({
+                        userId: res[0].userId,
+                        role: res[0].role
+                    })
                 }
             }
         })
@@ -229,7 +234,7 @@ async function userRole(authMediumUserName) {
                 if (res.length > 0) {
                     resolve({
                         userId: res[0].userId,
-                        oldRole: res[0].role
+                        role: res[0].role
                     });
                 } else {
                     reject({ message: "User not found" });

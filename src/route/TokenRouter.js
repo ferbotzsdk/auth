@@ -35,7 +35,7 @@ router.post("/refresh", async (req, res) => {
                     try {
                         await deleteNewUnUsedToken(decodedRefreshToken.userId,refreshToken)
                         await deleteOldToken(decodedRefreshToken.userId,refreshToken)
-                        const newTokens = await createRefreshAndBearer(decodedRefreshToken.userId,refreshToken,decodedRefreshToken.sessionId)
+                        const newTokens = await createRefreshAndBearer(decodedRefreshToken.userId,refreshToken,decodedRefreshToken.sessionId,decodedRefreshToken.role)
                         if(newTokens){
                             res.status(200).json({
                                 refreshToken : newTokens.refreshToken,

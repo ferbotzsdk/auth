@@ -17,14 +17,15 @@ router.post("/signup", async (req, res) => {
         const {user, error} = await verifyGoogle(idToken)
         if (user) {
             try {
-                const userId = await createUserWithGoogleAuth(user)
+                const {userId,role} = await createUserWithGoogleAuth(user)
                 const sessionId = await addSession(deviceName,deviceModel)
-                const tokens = await createRefreshAndBearer(userId,null,sessionId)
+                const tokens = await createRefreshAndBearer(userId,null,sessionId,role)
                 if(tokens){
                     res.status(200).json({
                         refreshToken : tokens.refreshToken,
                         bearerToken : tokens.bearerToken,
-                        sessionId : sessionId
+                        sessionId : sessionId,
+                        role: role
                     })
                 }else {
                     res.status(500).json({message : "Server error, failed to create tokens"})
@@ -46,14 +47,15 @@ router.post("/signup/owner", async (req, res) => {
         const {user, error} = await verifyGoogle(idToken)
         if (user) {
             try {
-                const userId = await createOwnerWithGoogleAuth(user)
+                const {userId,role} = await createOwnerWithGoogleAuth(user)
                 const sessionId = await addSession(deviceName,deviceModel)
-                const tokens = await createRefreshAndBearer(userId,null,sessionId)
+                const tokens = await createRefreshAndBearer(userId,null,sessionId,role)
                 if(tokens){
                     res.status(200).json({
                         refreshToken : tokens.refreshToken,
                         bearerToken : tokens.bearerToken,
-                        sessionId : sessionId
+                        sessionId : sessionId,
+                        role: role
                     })
                 }else {
                     res.status(500).json({message : "Server error, failed to create tokens"})
@@ -76,14 +78,15 @@ router.post("/signin", async (req, res) => {
         const {user, error} = await verifyGoogle(idToken)
         if (user) {
             try{
-                const userId = await getGoogleUser(user)
+                const {userId,role} = await getGoogleUser(user)
                 const sessionId = await addSession(deviceName,deviceModel)
-                const tokens = await createRefreshAndBearer(userId,null,sessionId)
+                const tokens = await createRefreshAndBearer(userId,null,sessionId,role)
                 if(tokens){
                     res.status(200).json({
                         refreshToken : tokens.refreshToken,
                         bearerToken : tokens.bearerToken,
-                        sessionId : sessionId
+                        sessionId : sessionId,
+                        role: role
                     })
                 }else {
                     res.status(500).json({message: "Server error, failed to create tokens"})

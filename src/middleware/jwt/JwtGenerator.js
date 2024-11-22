@@ -16,9 +16,9 @@ async function generateRefreshToken(userId,sessionId) {
     })
 }
 
-async function generateBearerToken(userId,sessionId) {
+async function generateBearerToken(userId,sessionId,role) {
     return new Promise((resolve, reject) => {
-        jwt.sign({ userId: userId , sessionId: sessionId}, jwtPrivateKey, { algorithm: 'RS256' , expiresIn: bearerExpiryTime }, function(error, token) {
+        jwt.sign({ userId: userId , sessionId: sessionId, role: role}, jwtPrivateKey, { algorithm: 'RS256' , expiresIn: bearerExpiryTime }, function(error, token) {
             if(error){
                 reject({message : error.message});
             }else {
