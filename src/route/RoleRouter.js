@@ -46,7 +46,7 @@ router.post("/assign", async (req, res) => {
                 }
                 
                 try {
-                    await assignRole(userId, newRole);
+                    await assignRole(newRole,userId);
                     return res.status(200).json({ message: "Role assigned successfully." });
                 }catch (error){
                     res.status(500).json({message : error.message})
