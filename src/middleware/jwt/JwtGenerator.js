@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const jwtPrivateKey = process.env.JWT_PRIVATE_KEY.replace(/\\n/g, '\n');
+const jwtPrivateKey = process.env.AUTH_JWT_PRIVATE_KEY.replace(/\\n/g, '\n');
 const refreshExpiryTime = 10 * 24 * 60 * 60
 const bearerExpiryTime = 2 * 60 * 60
 

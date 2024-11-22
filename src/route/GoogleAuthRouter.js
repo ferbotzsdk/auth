@@ -104,12 +104,10 @@ router.post("/signin", async (req, res) => {
 
 async function verifyGoogle(idToken) {
     try {
+        const audience = process.env.AUTH_GOOGLE_CLIENT_IDS.split(",")
         const ticket = await client.verifyIdToken({
             idToken: idToken,
-            audience: [
-                process.env.GOOGLE_SERVER_CLIENT_ID,
-                process.env.GOOGLE_ANDROID_CLIENT_ID,
-            ]
+            audience: audience
         });
         const payload = ticket.getPayload();
         const googleUserData = googleUserDataModel.validate(payload);

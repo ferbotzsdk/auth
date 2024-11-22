@@ -102,10 +102,10 @@ function initFerbotzAuth(config) {
 
 // initFerbotzAuth({
 //     port : process.env.AUTH_PORT || 3000,
-//     sqlHost : process.env.SQL_HOST,
-//     sqlUser : process.env.SQL_USER_NAME,
-//     sqlPassword : process.env.SQL_PWD,
-//     sqlDatabase : process.env.SQL_DATABASE,
+//     sqlHost : process.env.AUTH_SQL_HOST,
+//     sqlUser : process.env.AUTH_SQL_USER_NAME,
+//     sqlPassword : process.env.AUTH_SQL_PWD,
+//     sqlDatabase : process.env.AUTH_SQL_DATABASE,
 // })
 
 module.exports = { initFerbotzAuth };
