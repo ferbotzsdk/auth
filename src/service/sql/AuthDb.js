@@ -72,7 +72,7 @@ async function createOwnerWithGoogleAuth(googleUser) {
 
 async function getGoogleUser(googleUser){
     const values = [googleUser.userId]
-    const getUserQuery = "SELECT userId, role FROM auth WHERE authMediumId=?;"
+    const getUserQuery = "SELECT userId, role FROM auth WHERE authMediumId = ?;";
     return new Promise((resolve, reject) => {
         sqlCon.query(getUserQuery, values, (error, res) => {
             if (error) {

@@ -1,7 +1,8 @@
-
 const express = require('express');
 const mySql = require('mysql');
 require('dotenv').config();
+let sqlConnection = null;
+
 
 function initFerbotzAuth(config) {
     // Apply external configuration
@@ -24,7 +25,7 @@ function initFerbotzAuth(config) {
         password: sqlPassword,
     });
 
-    const dbCon = mySql.createConnection({
+    sqlConnection = mySql.createConnection({
         host: sqlHost,
         user: sqlUser,
         password: sqlPassword,
@@ -57,56 +58,52 @@ function initFerbotzAuth(config) {
         );`
     ];
 
-    // Database initialization
-    function initDbAndTables() {
-        initialCon.connect(err => {
+    initialCon.connect(err => {
+        if (err) throw err;
+        console.log("Connected to MySQL for setup.");
+
+        // Create database if not exists
+        initialCon.query(`CREATE DATABASE IF NOT EXISTS ${sqlDatabase}`, err => {
             if (err) throw err;
-            console.log("Connected to MySQL for setup.");
+            console.log(`Database '${sqlDatabase}' ensured.`);
 
-            // Create database if not exists
-            initialCon.query(`CREATE DATABASE IF NOT EXISTS ${sqlDatabase}`, err => {
+            sqlConnection.connect(err => {
                 if (err) throw err;
-                console.log(`Database '${sqlDatabase}' ensured.`);
+                console.log(`Connected to database '${sqlDatabase}'.`);
 
-                dbCon.connect(err => {
-                    if (err) throw err;
-                    console.log(`Connected to database '${sqlDatabase}'.`);
-
-                    tableSchemas.forEach(schema => {
-                        dbCon.query(schema, err => {
-                            if (err) throw err;
-                            console.log("Table ensured:", schema.split(' ')[2]); // Logs the table name
-                        });
+                tableSchemas.forEach(schema => {
+                    sqlConnection.query(schema, err => {
+                        if (err) throw err;
+                        console.log("Table ensured:", schema.split(' ')[2]); // Logs the table name
                     });
+                });
+                // Setup routes
+                app.use("/auth/google", require("./route/GoogleAuthRouter").googleAuthRouter);
+                app.use("/auth/token", require("./route/TokenRouter").tokenRouter);
+                app.use("/auth/session", require("./route/SessionRouter").sessionRouter);
+                app.use("/auth/role", require("./route/RoleRouter").roleRouter);
+
+                // Start server
+                app.listen(port, () => {
+                    console.log(`Listening on port ${port}`);
                 });
             });
         });
-    }
-
-    // Initialize database
-    initDbAndTables();
-
-    // Setup routes
-    app.use("/auth/google", require("./route/GoogleAuthRouter").googleAuthRouter);
-    app.use("/auth/token", require("./route/TokenRouter").tokenRouter);
-    app.use("/auth/session", require("./route/SessionRouter").sessionRouter);
-    app.use("/auth/role", require("./route/RoleRouter").roleRouter);
-
-    // Start server
-    app.listen(port, () => {
-        console.log(`Listening on port ${port}`);
     });
 
     return app;
 }
 
-// initFerbotzAuth({
-//     port : process.env.AUTH_PORT || 3000,
-//     sqlHost : process.env.AUTH_SQL_HOST,
-//     sqlUser : process.env.AUTH_SQL_USER_NAME,
-//     sqlPassword : process.env.AUTH_SQL_PWD,
-//     sqlDatabase : process.env.AUTH_SQL_DATABASE,
-// })
+initFerbotzAuth({
+    port : process.env.AUTH_PORT || 3000,
+    sqlHost : process.env.AUTH_SQL_HOST,
+    sqlUser : process.env.AUTH_SQL_USER_NAME,
+    sqlPassword : process.env.AUTH_SQL_PWD,
+    sqlDatabase : process.env.AUTH_SQL_DATABASE,
+})
 
-module.exports = { initFerbotzAuth };
+module.exports = { 
+    initFerbotzAuth, 
+    get sqlConnection() { return sqlConnection; }
+};
 
