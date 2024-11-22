@@ -1,13 +1,15 @@
 {
-  "name": "auth",
+  "name": "ferbotz-auth",
+  "description": "ferbotz-auth simplifies authentication by handling user signup/signin, role management, token cycles, and local database setup. Designed for developers who want a plug-and-play solution with minimal setup.",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "run": "node src/app.js"
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ferbotzsdk/auth.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["auth", "jwt" , "token" , "refreshToken" , "bearerToken" , "authSdk" , "authService" , "auth plug and play"],
+  "author": "Vishal B",
+  "license": "MIT",
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
