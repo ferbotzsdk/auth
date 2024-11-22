@@ -1,91 +1,112 @@
-console.log("init MonoDateAuth");
+
+const express = require('express');
+const mySql = require('mysql');
 require('dotenv').config();
 
-// api setup
-const express = require('express');
-const app = express();
-const port = process.env.AUTH_PORT || 3000;
-app.use(express.json());
-app.listen(port, () => {
-    console.log(`Listening on port ${port}`)
-});
+function initFerbotzAuth(config) {
+    // Apply external configuration
+    const {
+        port = config.port,
+        sqlHost = config.sqlHost,
+        sqlUser = config.sqlUser,
+        sqlPassword = config.sqlPassword,
+        sqlDatabase = config.sqlDatabase,
+    } = config;
 
-// MySQL setup
-const mySql = require('mysql');
+    // Express app setup
+    const app = config.express || express();
+    app.use(express.json());
 
-const initialCon = mySql.createConnection({
-    host: process.env.SQL_HOST,
-    user: process.env.SQL_USER_NAME,
-    password: process.env.SQL_PWD,
-});
+    // MySQL setup
+    const initialCon = mySql.createConnection({
+        host: sqlHost,
+        user: sqlUser,
+        password: sqlPassword,
+    });
 
-const dbCon = mySql.createConnection({
-    host: process.env.SQL_HOST,
-    user: process.env.SQL_USER_NAME,
-    password: process.env.SQL_PWD,
-    database: process.env.SQL_DATABASE,
-});
+    const dbCon = mySql.createConnection({
+        host: sqlHost,
+        user: sqlUser,
+        password: sqlPassword,
+        database: sqlDatabase,
+    });
 
-// Database and tables schema
-const databaseName = process.env.SQL_DATABASE;
-const tableSchemas = [
-    `CREATE TABLE IF NOT EXISTS auth (
-        userId INT NOT NULL AUTO_INCREMENT,
-        authMedium ENUM('google') NOT NULL,
-        role ENUM('OWNER','ADMIN','EDITOR','USER') NOT NULL,
-        authMediumId VARCHAR(255) DEFAULT NULL,
-        authMediumUserName VARCHAR(255) NOT NULL UNIQUE,
-        PRIMARY KEY (userId)
-    );`,
-    `CREATE TABLE IF NOT EXISTS refresh (
-        id INT NOT NULL AUTO_INCREMENT,
-        userId INT NOT NULL,
-        refreshToken TEXT NOT NULL,
-        generatedAfter TEXT DEFAULT NULL,
-        sessionId INT NOT NULL,
-        PRIMARY KEY (id),
-        KEY sessionId (sessionId)
-    );`,
-    `CREATE TABLE IF NOT EXISTS SESSION (
-        id INT NOT NULL AUTO_INCREMENT,
-        deviceName VARCHAR(100) NOT NULL,
-        deviceModel VARCHAR(255) NOT NULL,
-        PRIMARY KEY (id)
-    );`
-];
+    const tableSchemas = [
+        `CREATE TABLE IF NOT EXISTS auth (
+            userId INT NOT NULL AUTO_INCREMENT,
+            authMedium ENUM('google') NOT NULL,
+            role ENUM('OWNER','ADMIN','EDITOR','USER') NOT NULL,
+            authMediumId VARCHAR(255) DEFAULT NULL,
+            authMediumUserName VARCHAR(255) NOT NULL UNIQUE,
+            PRIMARY KEY (userId)
+        );`,
+        `CREATE TABLE IF NOT EXISTS refresh (
+            id INT NOT NULL AUTO_INCREMENT,
+            userId INT NOT NULL,
+            refreshToken TEXT NOT NULL,
+            generatedAfter TEXT DEFAULT NULL,
+            sessionId INT NOT NULL,
+            PRIMARY KEY (id),
+            KEY sessionId (sessionId)
+        );`,
+        `CREATE TABLE IF NOT EXISTS SESSION (
+            id INT NOT NULL AUTO_INCREMENT,
+            deviceName VARCHAR(100) NOT NULL,
+            deviceModel VARCHAR(255) NOT NULL,
+            PRIMARY KEY (id)
+        );`
+    ];
 
-// Check and initialize database and tables
-function initDbAndTables() {
-    initialCon.connect(err => {
-        if (err) throw err;
-        console.log("Connected to MySQL for setup.");
-
-        // Check if database exists or create it
-        initialCon.query(`CREATE DATABASE IF NOT EXISTS ${databaseName}`, err => {
+    // Database initialization
+    function initDbAndTables() {
+        initialCon.connect(err => {
             if (err) throw err;
-            console.log(`Database '${databaseName}' ensured.`);
+            console.log("Connected to MySQL for setup.");
 
-            // Connect to the database and ensure tables exist
-            dbCon.connect(err => {
+            // Create database if not exists
+            initialCon.query(`CREATE DATABASE IF NOT EXISTS ${sqlDatabase}`, err => {
                 if (err) throw err;
-                console.log(`Connected to database '${databaseName}'.`);
+                console.log(`Database '${sqlDatabase}' ensured.`);
 
-                tableSchemas.forEach(schema => {
-                    dbCon.query(schema, err => {
-                        if (err) throw err;
-                        console.log("Table ensured:", schema.split(' ')[2]); // Logs the table name
+                dbCon.connect(err => {
+                    if (err) throw err;
+                    console.log(`Connected to database '${sqlDatabase}'.`);
+
+                    tableSchemas.forEach(schema => {
+                        dbCon.query(schema, err => {
+                            if (err) throw err;
+                            console.log("Table ensured:", schema.split(' ')[2]); // Logs the table name
+                        });
                     });
                 });
             });
         });
+    }
+
+    // Initialize database
+    initDbAndTables();
+
+    // Setup routes
+    app.use("/auth/google", require("./route/GoogleAuthRouter").googleAuthRouter);
+    app.use("/auth/token", require("./route/TokenRouter").tokenRouter);
+    app.use("/auth/session", require("./route/SessionRouter").sessionRouter);
+    app.use("/auth/role", require("./route/RoleRouter").roleRouter);
+
+    // Start server
+    app.listen(port, () => {
+        console.log(`Listening on port ${port}`);
     });
+
+    return app;
 }
 
-// Run initialization
-initDbAndTables();
+// initFerbotzAuth({
+//     port : process.env.AUTH_PORT || 3000,
+//     sqlHost : process.env.SQL_HOST,
+//     sqlUser : process.env.SQL_USER_NAME,
+//     sqlPassword : process.env.SQL_PWD,
+//     sqlDatabase : process.env.SQL_DATABASE,
+// })
 
-module.exports.sqlConnection = dbCon;
-app.use("/auth/google" , require("./route/GoogleAuthRouter").googleAuthRouter)
-app.use("/auth/token" , require("./route/TokenRouter").tokenRouter)
-app.use("/auth/session" , require("./route/SessionRouter").sessionRouter)
-app.use("/auth/role" , require("./route/RoleRouter").roleRouter)
+module.exports = { initFerbotzAuth };
+
