@@ -37,7 +37,7 @@ router.post("/assign", async (req, res) => {
 
                 if (hierarchy[oldRole] > hierarchy[myRole]) {
                     return res.status(403).json({
-                        message: `You cannot change roles of users with ${oldRole}.`
+                        message: `You cannot change roles of users with ${myRole}.`
                     });
                 }
 
