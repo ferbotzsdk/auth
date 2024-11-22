@@ -3,7 +3,7 @@ const router = require("express").Router();
 const assignRoleBody = require("../model/role/AssignRoleBody").assignRoleBody
 const { userRole } = require("../service/sql/AuthDb").userRole
 const { assignRole } = require("../service/sql/AuthDb").assignRole
-const { decodeJwt } = require('jwtdecode');
+const { decodeJwt } = require('ferbotz-certify');
 
 
 router.post("/assign", async (req, res) => {

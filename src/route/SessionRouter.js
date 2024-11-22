@@ -2,7 +2,7 @@ const {refreshTokensBody: refreshTokenBody} = require("../model/token/RefreshTok
 const router = require('express').Router();
 const { getAllSessions } = require("../service/sql/AuthDb").getAllSessions
 const { deleteOldTokens } = require("../service/sql/AuthDb").deleteOldTokens
-const { decodeJwt,validateAuth } = require('jwtdecode');
+const { decodeJwt,validateAuth } = require('ferbotz-certify');
 const { sessionExist } = require("../service/sql/AuthDb").sessionExist
 const { refreshTokenExist } = require("../service/sql/AuthDb").refreshTokenExist
 

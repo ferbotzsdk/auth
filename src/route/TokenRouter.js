@@ -1,6 +1,5 @@
 const router = require('express').Router();
-const { decodeJwt } = require('jwtdecode');
-const { decodeJwtFlexible } = require('jwtdecode');
+const { decodeJwt,decodeJwtFlexible } = require('ferbotz-certify');
 const refreshTokenBody = require("../model/token/RefreshTokensBody").refreshTokensBody
 const { refreshTokenExist } = require("../service/sql/AuthDb").refreshTokenExist
 const { deleteOldToken } = require("../service/sql/AuthDb").deleteOldToken
