@@ -1,35 +1,26 @@
-const express = require('express');
+const mExpress = require('express');
 const mySql = require('mysql');
 require('dotenv').config();
 let sqlConnection = null;
 
 
 function initFerbotzAuth(config) {
-    // Apply external configuration
-    const {
-        port = config.port,
-        sqlHost = config.sqlHost,
-        sqlUser = config.sqlUser,
-        sqlPassword = config.sqlPassword,
-        sqlDatabase = config.sqlDatabase,
-    } = config;
 
-    // Express app setup
-    const app = config.express || express();
-    app.use(express.json());
+    const app = config.express || mExpress();
+    app.use(mExpress.json());
 
     // MySQL setup
     const initialCon = mySql.createConnection({
-        host: sqlHost,
-        user: sqlUser,
-        password: sqlPassword,
+        host: config.sqlHost,
+        user: config.sqlUser,
+        password: config.sqlPassword,
     });
 
     sqlConnection = mySql.createConnection({
-        host: sqlHost,
-        user: sqlUser,
-        password: sqlPassword,
-        database: sqlDatabase,
+        host: config.sqlHost,
+        user: config.sqlUser,
+        password: config.sqlPassword,
+        database: config.sqlDatabase,
     });
 
     const tableSchemas = [
@@ -63,13 +54,13 @@ function initFerbotzAuth(config) {
         console.log("Connected to MySQL for setup.");
 
         // Create database if not exists
-        initialCon.query(`CREATE DATABASE IF NOT EXISTS ${sqlDatabase}`, err => {
+        initialCon.query(`CREATE DATABASE IF NOT EXISTS ${config.sqlDatabase}`, err => {
             if (err) throw err;
-            console.log(`Database '${sqlDatabase}' ensured.`);
+            console.log(`Database '${config.sqlDatabase}' ensured.`);
 
             sqlConnection.connect(err => {
                 if (err) throw err;
-                console.log(`Connected to database '${sqlDatabase}'.`);
+                console.log(`Connected to database '${config.sqlDatabase}'.`);
 
                 tableSchemas.forEach(schema => {
                     sqlConnection.query(schema, err => {
@@ -84,9 +75,11 @@ function initFerbotzAuth(config) {
                 app.use("/auth/role", require("./route/RoleRouter").roleRouter);
 
                 // Start server
-                app.listen(port, () => {
-                    console.log(`Listening on port ${port}`);
-                });
+                if(!config.express){
+                    app.listen(config.port, () => {
+                        console.log(`Listening on port ${config.port}`);
+                    });
+                }
             });
         });
     });
@@ -94,13 +87,13 @@ function initFerbotzAuth(config) {
     return app;
 }
 
-initFerbotzAuth({
-    port : process.env.AUTH_PORT || 3000,
-    sqlHost : process.env.AUTH_SQL_HOST,
-    sqlUser : process.env.AUTH_SQL_USER_NAME,
-    sqlPassword : process.env.AUTH_SQL_PWD,
-    sqlDatabase : process.env.AUTH_SQL_DATABASE,
-})
+// initFerbotzAuth({
+//     port : process.env.PORT || 3000,
+//     sqlHost : process.env.AUTH_SQL_HOST,
+//     sqlUser : process.env.AUTH_SQL_USER_NAME,
+//     sqlPassword : process.env.AUTH_SQL_PWD,
+//     sqlDatabase : process.env.AUTH_SQL_DATABASE,
+// })
 
 module.exports = { 
     initFerbotzAuth, 
