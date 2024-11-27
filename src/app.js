@@ -14,6 +14,7 @@ function initFerbotzAuth(config) {
         host: config.sqlHost,
         user: config.sqlUser,
         password: config.sqlPassword,
+        port: config.sqlPort
     });
 
     sqlConnection = mySql.createConnection({
@@ -21,6 +22,7 @@ function initFerbotzAuth(config) {
         user: config.sqlUser,
         password: config.sqlPassword,
         database: config.sqlDatabase,
+        port: config.sqlPort
     });
 
     const tableSchemas = [
@@ -41,7 +43,7 @@ function initFerbotzAuth(config) {
             PRIMARY KEY (id),
             KEY sessionId (sessionId)
         );`,
-        `CREATE TABLE IF NOT EXISTS SESSION (
+        `CREATE TABLE IF NOT EXISTS session (
             id INT NOT NULL AUTO_INCREMENT,
             deviceName VARCHAR(100) NOT NULL,
             deviceModel VARCHAR(255) NOT NULL,
@@ -86,14 +88,6 @@ function initFerbotzAuth(config) {
 
     return app;
 }
-
-// initFerbotzAuth({
-//     port : process.env.PORT || 3000,
-//     sqlHost : process.env.AUTH_SQL_HOST,
-//     sqlUser : process.env.AUTH_SQL_USER_NAME,
-//     sqlPassword : process.env.AUTH_SQL_PWD,
-//     sqlDatabase : process.env.AUTH_SQL_DATABASE,
-// })
 
 module.exports = { 
     initFerbotzAuth, 
