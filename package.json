@@ -1,7 +1,7 @@
 {
   "name": "ferbotz-auth",
   "description": "ferbotz-auth simplifies authentication by handling user signup/signin, role management, token cycles, and local database setup. Designed for developers who want a plug-and-play solution with minimal setup.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "src/app.js",
   "repository": {
     "type": "git",
