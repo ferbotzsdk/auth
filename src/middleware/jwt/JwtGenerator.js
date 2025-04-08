@@ -6,7 +6,7 @@ const bearerExpiryTime = 2 * 60 * 60
 
 async function generateRefreshToken(userId,sessionId) {
     return new Promise((resolve, reject) => {
-        jwt.sign({ userId: userId , sessionId: sessionId}, jwtPrivateKey, { algorithm: 'RS256' , expiresIn: refreshExpiryTime }, function(error, token) {
+        jwt.sign({ userId: userId , sessionId: sessionId, i : Date.now()}, jwtPrivateKey, { algorithm: 'RS256' , expiresIn: refreshExpiryTime }, function(error, token) {
             if(error){
                 reject({message : error.message});
             }else {
@@ -18,7 +18,7 @@ async function generateRefreshToken(userId,sessionId) {
 
 async function generateBearerToken(userId,sessionId,role) {
     return new Promise((resolve, reject) => {
-        jwt.sign({ userId: userId , sessionId: sessionId, role: role}, jwtPrivateKey, { algorithm: 'RS256' , expiresIn: bearerExpiryTime }, function(error, token) {
+        jwt.sign({ userId: userId , sessionId: sessionId, role: role, i : Date.now()}, jwtPrivateKey, { algorithm: 'RS256' , expiresIn: bearerExpiryTime }, function(error, token) {
             if(error){
                 reject({message : error.message});
             }else {

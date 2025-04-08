@@ -1,7 +1,7 @@
 {
   "name": "ferbotz-auth",
   "description": "ferbotz-auth simplifies authentication by handling user signup/signin, role management, token cycles, and local database setup. Designed for developers who want a plug-and-play solution with minimal setup.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "src/app.js",
   "repository": {
     "type": "git",
@@ -23,7 +23,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
-    "ferbotz-certify": "^1.0.2",
+    "ferbotz-certify": "^1.0.3",
     "google-auth-library": "^9.14.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
